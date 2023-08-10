@@ -3,6 +3,7 @@
 
 
 struct http_configuration {
+    bool enabled;
     int port;
     int threads;
     long read_timeout;
