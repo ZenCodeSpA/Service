@@ -95,7 +95,7 @@ void http_session::run() {
 
 void http_session::on_run() {
     beast::get_lowest_layer(stream_).expires_after(
-            std::chrono::seconds(30));
+            std::chrono::seconds(configuration_->handshake_timeout));
 
     stream_.async_handshake(
             ssl::stream_base::server,
@@ -114,7 +114,7 @@ void http_session::on_handshake(beast::error_code ec)  {
 void http_session::do_read() {
     req_ = {};
 
-    beast::get_lowest_layer(stream_).expires_after(std::chrono::seconds(30));
+    beast::get_lowest_layer(stream_).expires_after(std::chrono::seconds(configuration_->read_timeout));
 
     http::async_read(stream_, buffer_, req_,
                      beast::bind_front_handler(
@@ -161,7 +161,7 @@ void http_session::on_write(bool keep_alive, beast::error_code ec, std::size_t b
 }
 
 void http_session::do_close() {
-    beast::get_lowest_layer(stream_).expires_after(std::chrono::seconds(30));
+    beast::get_lowest_layer(stream_).expires_after(std::chrono::seconds(configuration_->write_timeout));
 
     stream_.async_shutdown(
             beast::bind_front_handler(

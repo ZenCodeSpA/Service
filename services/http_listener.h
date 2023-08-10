@@ -15,6 +15,7 @@
 #include <vector>
 #include "http_fail.h"
 #include "http_session.h"
+#include "http_configuration.h"
 
 namespace beast = boost::beast;
 namespace http = beast::http;
@@ -30,9 +31,15 @@ class http_listener : public std::enable_shared_from_this<http_listener> {
     ssl::context& ctx_;
     tcp::acceptor acceptor_;
     std::shared_ptr<std::string const> doc_root_;
+    std::shared_ptr<http_configuration> configuration_;
 
 public:
-    http_listener(net::io_context& ioc, ssl::context& ctx, tcp::endpoint endpoint, std::shared_ptr<std::string const> const& doc_root);
+    http_listener(
+            net::io_context& ioc,
+            ssl::context& ctx,
+            tcp::endpoint endpoint,
+            std::shared_ptr<std::string const> const& doc_root,
+            std::shared_ptr<http_configuration> const& configuration);
 
     void run();
 private:

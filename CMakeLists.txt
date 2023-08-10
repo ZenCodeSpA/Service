@@ -20,6 +20,6 @@ add_executable(System
         services/http_session.h
         services/http_fail.cpp
         services/http_fail.h
-)
+        services/http_configuration.h)
 
 target_link_libraries(System PRIVATE -lssl -lcrypto ${Boost_LIBRARIES})

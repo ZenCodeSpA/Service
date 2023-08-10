@@ -15,6 +15,7 @@
 #include <vector>
 #include "http_fail.h"
 #include "http_request.h"
+#include "http_configuration.h"
 
 namespace beast = boost::beast;
 namespace http = beast::http;
@@ -29,10 +30,19 @@ class http_session : public std::enable_shared_from_this<http_session> {
     beast::ssl_stream<beast::tcp_stream> stream_;
     beast::flat_buffer buffer_;
     std::shared_ptr<std::string const> doc_root_;
+    std::shared_ptr<http_configuration> configuration_;
     http::request<http::string_body> req_;
 
 public:
-    explicit http_session(tcp::socket&& socket, ssl::context& ctx, std::shared_ptr<std::string const> const& doc_root) : stream_(std::move(socket), ctx) , doc_root_(doc_root) { }
+    explicit http_session(tcp::socket&& socket,
+                          ssl::context& ctx,
+                          std::shared_ptr<std::string const> const& doc_root,
+                          std::shared_ptr<http_configuration> const& configuration
+                          ) :
+        stream_(std::move(socket), ctx),
+        doc_root_(doc_root),
+        configuration_(configuration)
+        { }
 
     void run();
     void on_run();

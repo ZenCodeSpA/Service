@@ -1,7 +1,17 @@
 #include "http_listener.h"
 
-http_listener::http_listener(net::io_context &ioc, ssl::context &ctx, tcp::endpoint endpoint,
-                             const std::shared_ptr<const std::string> &doc_root): ioc_(ioc), ctx_(ctx), acceptor_(ioc), doc_root_(doc_root) {
+http_listener::http_listener(net::io_context &ioc,
+                             ssl::context &ctx,
+                             tcp::endpoint endpoint,
+                             const std::shared_ptr<const std::string> &doc_root,
+                             const std::shared_ptr<http_configuration> &configuration
+                             ):
+                                ioc_(ioc),
+                                ctx_(ctx),
+                                acceptor_(ioc),
+                                doc_root_(doc_root),
+                                configuration_(configuration)
+                             {
     beast::error_code ec;
 
     acceptor_.open(endpoint.protocol(), ec);
@@ -49,7 +59,9 @@ void http_listener::on_accept(beast::error_code ec, tcp::socket socket) {
         std::make_shared<http_session>(
                 std::move(socket),
                 ctx_,
-                doc_root_)->run();
+                doc_root_,
+                configuration_
+                )->run();
     }
 
     do_accept();
