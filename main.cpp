@@ -25,9 +25,9 @@ inline void ssl_certificates(boost::asio::ssl::context& ctx) {
 int main(int argc, char *argv[]) {
     std::shared_ptr<http_configuration> http_configuration_ = std::make_shared<http_configuration>();
 
-    po::options_description desc("ZenCore System — Program Options");
+    po::options_description options_description_("ZenCore System — Program Options");
 
-    desc.add_options()
+    options_description_.add_options()
             ("help", "Print PO details")
             ("run",  "Run the Program")
             ("http", po::value<bool>(&http_configuration_->enabled), "The HTTP Service module is enabled \n(boolean, on|off, default=on)")
@@ -39,21 +39,21 @@ int main(int argc, char *argv[]) {
             ("http_directory", po::value<std::string>(&http_configuration_->directory), "The directory used by HTTP Service \n(path, default=www)")
     ;
 
-    po::variables_map vm;
-    po::store(po::parse_command_line(argc, argv, desc), vm);
-    po::notify(vm);
+    po::variables_map options;
+    po::store(po::parse_command_line(argc, argv, options_description_), options);
+    po::notify(options);
 
-    if (vm.count("help")) {
-        std::cout << desc << std::endl;
+    if (options.count("help")) {
+        std::cout << options_description_ << std::endl;
         return 1;
     }
 
-    if (vm.count("run")) {
+    if (options.count("run")) {
 
-        if (vm.count("http")) {
+        if (options.count("http")) {
             tcp::endpoint endpoint;
 
-            if (vm.count("http_port")) {
+            if (options.count("http_port")) {
                 endpoint = { boost::asio::ip::tcp::v4(), boost::asio::ip::port_type(http_configuration_->port) };
             } else {
                 endpoint = { boost::asio::ip::tcp::v4(), boost::asio::ip::port_type(8080) };
@@ -66,28 +66,28 @@ int main(int argc, char *argv[]) {
 
             std::shared_ptr<std::string> doc_root;
 
-            if (vm.count("http_directory")) {
+            if (options.count("http_directory")) {
                 doc_root = std::make_shared<std::string>(http_configuration_->directory);
             } else {
                 doc_root = std::make_shared<std::string>("www");
             }
 
-            if (!vm.count("http_read_timeout")) {
+            if (!options.count("http_read_timeout")) {
                 http_configuration_->read_timeout = 30;
             }
 
-            if (!vm.count("http_write_timeout")) {
+            if (!options.count("http_write_timeout")) {
                 http_configuration_->write_timeout = 30;
             }
 
-            if (!vm.count("http_handshake_timeout")) {
+            if (!options.count("http_handshake_timeout")) {
                 http_configuration_->handshake_timeout = 30;
             }
 
             std::make_shared<http_listener>(ioc,ctx, endpoint, doc_root, http_configuration_)->run();
 
             std::vector<std::thread> http_threads;
-            if (vm.count("http_threads")) {
+            if (options.count("http_threads")) {
                 http_threads.reserve(http_configuration_->threads);
                 for(auto i = http_configuration_->threads; i > 0; --i)
                     http_threads.emplace_back([&ioc]{ ioc.run(); });
