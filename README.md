@@ -1,5 +1,9 @@
 # System
 
+## Motivation
+
+¿Why use 300 megabytes when you can use just 10?
+
 ## Documentation
 
 ### CLI
