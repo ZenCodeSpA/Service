@@ -12,6 +12,7 @@ source_group(TREE ${Boost_INCLUDE_DIRS}/boost/beast PREFIX beast FILES ${BEAST_F
 add_executable(System
         main.cpp
         ${BEAST_FILES}
+        services/http_configuration.h
         services/http_request.cpp
         services/http_request.h
         services/http_listener.cpp
@@ -20,6 +21,7 @@ add_executable(System
         services/http_session.h
         services/http_fail.cpp
         services/http_fail.h
-        services/http_configuration.h)
+        services/queue_configuration.h
+        services/queue_task.h)
 
 target_link_libraries(System PRIVATE -lssl -lcrypto ${Boost_LIBRARIES})
