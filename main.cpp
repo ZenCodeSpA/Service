@@ -48,6 +48,7 @@ int main(int argc, char *argv[]) {
             ("queue", po::value<bool>(&queue_configuration_->enabled), "The Queue Service module is enabled \n(boolean, on|off, default=off)")
             ("queue_threads", po::value<int>(&queue_configuration_->threads), "The number of threads used by Queue Service \n(quantity, default=3)")
             ("queue_wait_timeout", po::value<long long>(&queue_configuration_->wait_timeout), "The wait timeout used by Queue Service \n(microseconds, default=100000)")
+            ("queue_reserved_slots", po::value<long long>(&queue_configuration_->reserved_slots), "The number of reserved slots used by Queue Service \n(quantity, default=1024)")
     ;
 
     po::variables_map options;
@@ -114,7 +115,10 @@ int main(int argc, char *argv[]) {
             http_thread_.detach();
         }
 
-        boost::lockfree::queue<queue_task *> queue_(1024);
+        if (!options.count("queue_reserved_slots")) {
+            queue_configuration_->reserved_slots = 1024;
+        }
+        boost::lockfree::queue<queue_task *> queue_(queue_configuration_->reserved_slots);
         if (options.count("queue")) {
             boost::atomic_int queue_producer_count_(0);
             boost::atomic_int queue_consumer_count_(0);
@@ -154,9 +158,9 @@ int main(int argc, char *argv[]) {
                 boost::json::value data_ = {
                         {"hello", "world"}
                 };
-                std::thread job_([] (const boost::json::value data) {
+                std::thread job_([] (const boost::json::value & data) {
                     std::cout << data.at("hello").as_string();
-                }, data_);
+                }, std::move(data_));
                 auto * heartbeat_task_ = new queue_task(std::move(job_));
                 queue_.push(heartbeat_task_);
             }

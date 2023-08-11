@@ -1,8 +1,8 @@
-# System
+# Service
 
-## Motivation
+## Abstract
 
-¿Why use 300 megabytes when you can use just 10?
+Micro optimization
 
 ## Documentation
 
@@ -11,7 +11,7 @@
 #### HTTP
 
 ```bash
-./System --run \
+./service --run \
          --http=on \
          --http_port=443 \
          --http_threads=5 \
@@ -21,7 +21,7 @@
 ### Queue
 
 ```bash
-./System --run \
+./service --run \
          --queue=on \
          --queue_threads=10
 ```
@@ -29,17 +29,19 @@
 ### HTTP + Queue
 
 ```bash
-./System --run \
+./service --run \
          --http=on \
          --http_port=443 \
          --http_threads=5 \
          --http_directory=assets \
          --queue=on \
-         --queue_threads=10
+         --queue_threads=10 \
+         --queue_wait_timeout=5000000 \
+         --queue_reserved_slots=2048
 ```
 
 ### Available Options
 
 ```bash
-./System --help
+./service --help
 ```
