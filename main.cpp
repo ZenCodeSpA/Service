@@ -47,6 +47,7 @@ int main(int argc, char *argv[]) {
             ("http_directory", po::value<std::string>(&http_configuration_->directory), "The directory used by HTTP Service \n(path, default=www)")
             ("queue", po::value<bool>(&queue_configuration_->enabled), "The Queue Service module is enabled \n(boolean, on|off, default=off)")
             ("queue_threads", po::value<int>(&queue_configuration_->threads), "The number of threads used by Queue Service \n(quantity, default=3)")
+            ("queue_wait_timeout", po::value<long long>(&queue_configuration_->wait_timeout), "The wait timeout used by Queue Service \n(microseconds, default=100000)")
     ;
 
     po::variables_map options;
@@ -55,7 +56,7 @@ int main(int argc, char *argv[]) {
 
     if (options.count("help")) {
         std::cout << options_description_ << std::endl;
-        return 1;
+        return 0;
     }
 
     if (options.count("run")) {
@@ -125,10 +126,14 @@ int main(int argc, char *argv[]) {
                 }
             };
 
+            if (!options.count("queue_wait_timeout")) {
+                queue_configuration_->wait_timeout = 100000;
+            }
+
             std::thread queue_thread_([&] {
                 while(true) {
                     if (queue_.empty()) {
-                        usleep(100000);
+                        usleep(queue_configuration_->wait_timeout);
                     } else {
                         boost::atomic<bool> queue_iteration_running_ (true);
                         boost::thread_group queue_consumer_threads;
@@ -146,13 +151,15 @@ int main(int argc, char *argv[]) {
             });
 
             for (int i = 0; i != 5; ++i) {
-                std::thread job_([] {
-                    std::cout << "Awesome" << std::endl;
-                });
+                boost::json::value data_ = {
+                        {"hello", "world"}
+                };
+                std::thread job_([] (const boost::json::value data) {
+                    std::cout << data.at("hello").as_string();
+                }, data_);
                 auto * heartbeat_task_ = new queue_task(std::move(job_));
                 queue_.push(heartbeat_task_);
             }
-            std::cout << "Joined" << std::endl;
             queue_thread_.detach();
         }
 

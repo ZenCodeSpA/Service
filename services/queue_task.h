@@ -1,5 +1,7 @@
 #include <thread>
 
+#include <boost/json.hpp>
+
 #ifndef SYSTEM_QUEUE_TASK_H
 #define SYSTEM_QUEUE_TASK_H
 
