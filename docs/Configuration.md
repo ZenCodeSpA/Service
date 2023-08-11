@@ -1,5 +1,0 @@
-# Configuration
-
-## HTTP
-
-## Queue
